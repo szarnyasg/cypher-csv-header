@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/szarnyasg/cypher-csv-header.svg?branch=master)](https://travis-ci.org/szarnyasg/cypher-csv-header)
 
-Little tool to generate Cypher commands from CSV headers complying the [Neo4j Import Tool's format](https://neo4j.com/docs/operations-manual/3.2/tools/import/file-header-format/).
+Little tool to generate Cypher commands from CSV headers compliant with the [Neo4j Import Tool's format](https://neo4j.com/docs/operations-manual/3.2/tools/import/file-header-format/).
 
 ## Goals
 

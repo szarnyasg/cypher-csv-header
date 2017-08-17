@@ -84,14 +84,15 @@ public class CsvHeaderToCypherConverter {
     final Optional<String> endIdSpace = fields.stream().filter(f -> f.getType().equals(Constants.END_ID_FIELD))
         .findFirst().get().getIdSpace();
 
-    final String srcIdSpace = startIdSpace.isPresent() ? "_" + startIdSpace.get() : "";
-    final String trgIdSpace = endIdSpace.isPresent() ? "_" + endIdSpace.get() : "";
+    final String srcIdSpace = startIdSpace.isPresent() ? ("_" + startIdSpace.get()) : "";
+    final String trgIdSpace = endIdSpace.isPresent()   ? ("_" + endIdSpace.get()  ) : "";
     
     final String createRelationshipsClause = String.format( //
-        "MATCH\n" + "  (src {`%s%s`: `%s`}),\n" + //
-            "  (trg {`%s%s`: `%s`})\n" + //
-            "CREATE\n" + //
-            "  (src)-[:`%s` %s]->(trg)\n", //
+        "MATCH\n" + //
+        "  (src {`%s%s`: `%s`}),\n" + //
+        "  (trg {`%s%s`: `%s`})\n" + //
+        "CREATE\n" + //
+        "  (src)-[:`%s` %s]->(trg)\n", //
         Constants.ID_PROPERTY, srcIdSpace, Constants.START_ID_PROPERTY, //
         Constants.ID_PROPERTY, trgIdSpace, Constants.END_ID_PROPERTY, //
         label, cypherProperties(fields));
