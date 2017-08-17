@@ -1,3 +1,8 @@
 language: java
 jdk:
   - oraclejdk8
+notifications:
+  slack: ftsrg:7ee1AKyCUt6GCACJsDy8Jl95
+  on_success: change
+  on_failure: always
+  email: false
