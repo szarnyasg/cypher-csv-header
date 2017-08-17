@@ -8,13 +8,13 @@ We recommend to use this tool for experimenting and functional testing. The perf
 
 ## Approach
 
-* For example, if the third field contains `age:int`, it will be translated to `toInt(line[2]) AS age`.
-* `CREATE ({age: age})`
-* `MATCH (src {...}), (trg {...}), (src)-[...]->(trg)`
-* Lists are also supported: a field can be split along the `arrayDelimiter` specified by the client and converted to the appropriate type using a [list comprehension](https://neo4j.com/docs/developer-manual/3.2/cypher/syntax/lists/#cypher-list-comprehension).
-`
+* Generate a command that loads the CSV file line-by-line: `LOAD CSV FROM ... AS line`
+* Use indices to select in a line. For example, if the third field of the header contains `age:int`, it will be translated to `toInt(line[2]) AS age`.
+* Create nodes like: `CREATE ({name: name, age: age})`
+* Create relationships: `MATCH (src {...}), (trg {...}) CREATE (src)-[...]->(trg)`
 * Properties are converted to the appropriate type. For most types, this is a trivial operation (e.g. `toInt`, `toFloat`), for booleans, this requires a `CASE` clause (as `toBoolean` has just been accepted in [openCypher](https://github.com/opencypher/openCypher/blob/dfd89877107250d69856e9ef890873f6d6e6a3a8/cip/2.testable/CIP2016-07-07-Type-conversion-functions.adoc ) and not supported yet in Neo4j 3.2).
-* [ID spaces](https://neo4j.com/docs/operations-manual/3.2/tutorial/import-tool/#import-tool-id-handling) are handled by appending a postfix to the property names, e.g. `:ID(Forum)` results in the property `_csv_internal_id_Forum`.
+* Array are also supported: a field can be split along the `arrayDelimiter` specified by the client and converted to the appropriate type using a [list comprehension](https://neo4j.com/docs/developer-manual/3.2/cypher/syntax/lists/#cypher-list-comprehension).
+* [ID spaces](https://neo4j.com/docs/operations-manual/3.2/tutorial/import-tool/#import-tool-id-handling) are handled by appending a postfix to the property names, e.g. `:ID(Forum)` results in the property `csv_internal_id_Forum`.
 
 Note that unlike the _import tool_, this tool offers little fault-tolerance: faulty data will probably crash the `LOAD CSV` command.
 
