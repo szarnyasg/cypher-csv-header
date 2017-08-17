@@ -11,12 +11,14 @@ public class CsvLoaderConfig {
   private final char arrayDelimiter;
   private final char quotationCharacter;
   private final boolean stringIds;
+  private final boolean skipHeaders;
 
   private CsvLoaderConfig(Builder builder) {
     this.fieldTerminator = builder.fieldTerminator;
     this.arrayDelimiter = builder.arrayDelimiter;
     this.quotationCharacter = builder.quotationCharacter;
     this.stringIds = builder.stringIds;
+    this.skipHeaders = builder.skipHeaders;
   }
 
   public char getFieldTerminator() {
@@ -34,6 +36,8 @@ public class CsvLoaderConfig {
   public boolean isStringIds() {
     return stringIds;
   }
+
+  public boolean isSkipHeaders() { return skipHeaders; }
   
   /**
    * Creates builder to build {@link CsvLoaderConfig}.
@@ -51,6 +55,7 @@ public class CsvLoaderConfig {
     private char arrayDelimiter = ';';
     private char quotationCharacter = '"';
     private boolean stringIds = true;
+    private boolean skipHeaders = true;
 
     private Builder() {
     }
@@ -67,6 +72,11 @@ public class CsvLoaderConfig {
 
     public Builder stringIds(boolean stringIds) {
       this.stringIds = stringIds;
+      return this;
+    }
+
+    public Builder skipHeaders(boolean skipHeaders) {
+      this.skipHeaders = skipHeaders;
       return this;
     }
 
