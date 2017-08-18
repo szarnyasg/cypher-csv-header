@@ -9,6 +9,7 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Map;
 
 public class MyNeo4jTest {
 
@@ -20,7 +21,7 @@ public class MyNeo4jTest {
 
     @Test
     public void basicTest() {
-        final String header = ":ID|name:STRING";
+        final String header = "name:STRING";
 
         final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).build();
         final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
@@ -32,6 +33,63 @@ public class MyNeo4jTest {
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
+    }
+
+    @Test
+    public void idTest() {
+        final String header = ":ID|name:STRING";
+
+        final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).build();
+        final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
+
+        final String cypher = c.convertNodes(getResourceAbsolutePath("id.csv"), header, Arrays.asList("Person"), config);
+        System.out.println(cypher);
+
+        final GraphDatabaseService gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
+        final Result execute = gds.execute(cypher);
+        final QueryStatistics qs = execute.getQueryStatistics();
+        Assert.assertEquals(1, qs.getNodesCreated());
+
+        final Result checkExecute = gds.execute("MATCH (n) WHERE n.ID = 1 RETURN COUNT(*) AS c");
+        Assert.assertEquals(1, checkExecute.next().get("c"));
+    }
+
+    @Test
+    public void idSpaceTest() {
+        final String header = ":ID(PERSONID)|name:STRING";
+
+        final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).build();
+        final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
+
+        final String cypher = c.convertNodes(getResourceAbsolutePath("id_space.csv"), header, Arrays.asList("Person"), config);
+        System.out.println(cypher);
+
+        final GraphDatabaseService gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
+        final Result execute = gds.execute(cypher);
+        final QueryStatistics qs = execute.getQueryStatistics();
+        Assert.assertEquals(1, qs.getNodesCreated());
+
+        final Result checkExecute = gds.execute("MATCH (n) WHERE n._PERSONID = 1 RETURN count(*) AS c");
+        Assert.assertEquals(1, checkExecute.next().get("c"));
+    }
+
+    @Test
+    public void labelTest() {
+        final String header = ":ID|:LABEL|name:STRING";
+
+        final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).build();
+        final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
+
+        final String cypher = c.convertNodes(getResourceAbsolutePath("label.csv"), header, Arrays.asList("Person"), config);
+        System.out.println(cypher);
+
+        final GraphDatabaseService gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
+        final Result execute = gds.execute(cypher);
+        final QueryStatistics qs = execute.getQueryStatistics();
+        Assert.assertEquals(1, qs.getNodesCreated());
+
+        final Result checkExecute = gds.execute("MATCH (n:Person) RETURN COUNT(*) AS c");
+        Assert.assertEquals(1, checkExecute.next().get("c"));
     }
 
     @Test
