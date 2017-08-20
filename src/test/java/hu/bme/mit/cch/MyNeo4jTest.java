@@ -16,7 +16,7 @@ import java.util.Arrays;
 public class MyNeo4jTest {
 
     CsvLoaderConfig config;
-    CsvHeaderToCypherConverter c;
+    CsvHeaderToCypherConverter converter;
     GraphDatabaseService gds;
 
     static String getResourceAbsolutePath(String testResource) {
@@ -27,7 +27,7 @@ public class MyNeo4jTest {
     @Before
     public void init() {
         config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(false).build();
-        c = new CsvHeaderToCypherConverter();
+        converter = new CsvHeaderToCypherConverter();
         gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
     }
 
@@ -39,8 +39,8 @@ public class MyNeo4jTest {
     @Test
     public void basicTest() {
         final String header = "name:STRING";
-        final String cypher = c.convertNodes(getResourceAbsolutePath("basic.csv"), header, Arrays.asList("Person"), config);
 
+        final String cypher = converter.convertNodes(getResourceAbsolutePath("basic.csv"), header, Arrays.asList("Person"), config);
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
@@ -49,53 +49,53 @@ public class MyNeo4jTest {
     @Test
     public void idTest() {
         final String header = ":ID|name:STRING";
-        final String cypher = c.convertNodes(getResourceAbsolutePath("id.csv"), header, Arrays.asList("Person"), config);
+        final String cypher = converter.convertNodes(getResourceAbsolutePath("id.csv"), header, Arrays.asList("Person"), config);
 
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
 
         final Result checkExecute = gds.execute(
-                String.format("MATCH (n) WHERE n.%s = 1 RETURN COUNT(*) AS c", Constants.ID_PROPERTY)
+                String.format("MATCH (n) WHERE n.%s = 1 RETURN COUNT(*) AS converter", Constants.ID_PROPERTY)
         );
-        Assert.assertEquals(1L, checkExecute.next().get("c"));
+        Assert.assertEquals(1L, checkExecute.next().get("converter"));
     }
 
     @Test
     public void idSpaceTest() {
         final String idSpace = "PERSONID";
         final String header = String.format(":ID(%s)|name:STRING", idSpace);
-        final String cypher = c.convertNodes(getResourceAbsolutePath("id_space.csv"), header, Arrays.asList("Person"), config);
+        final String cypher = converter.convertNodes(getResourceAbsolutePath("id_space.csv"), header, Arrays.asList("Person"), config);
 
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
 
         final Result checkExecute = gds.execute(
-                String.format("MATCH (n) WHERE n.%s_%s = 1 RETURN count(*) AS c", Constants.ID_PROPERTY, idSpace)
+                String.format("MATCH (n) WHERE n.%s_%s = 1 RETURN count(*) AS converter", Constants.ID_PROPERTY, idSpace)
         );
-        Assert.assertEquals(1L, checkExecute.next().get("c"));
+        Assert.assertEquals(1L, checkExecute.next().get("converter"));
     }
 
     @Test
     @Ignore
     public void labelTest() {
         final String header = ":ID|:LABEL|name:STRING";
-        final String cypher = c.convertNodes(getResourceAbsolutePath("label.csv"), header, Arrays.asList("Person"), config);
+        final String cypher = converter.convertNodes(getResourceAbsolutePath("label.csv"), header, Arrays.asList("Person"), config);
 
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
 
         final Result checkExecute = gds.execute("MATCH (n:Person) RETURN COUNT(*) AS c");
-        Assert.assertEquals(1, checkExecute.next().get("c"));
+        Assert.assertEquals(1, checkExecute.next().get("converter"));
     }
 
     @Test
     @Ignore
     public void arrayTest() {
         final String header = ":ID|name:STRING[]";
-        final String cypher = c.convertNodes(getResourceAbsolutePath("array.csv"), header, Arrays.asList("Person"), config);
+        final String cypher = converter.convertNodes(getResourceAbsolutePath("array.csv"), header, Arrays.asList("Person"), config);
 
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();

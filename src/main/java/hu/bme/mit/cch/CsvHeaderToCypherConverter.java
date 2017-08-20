@@ -30,7 +30,8 @@ public class CsvHeaderToCypherConverter {
    * 3 conversions functions</a>: toString, toInt and toFloat
    */
   private static final Map<String, String> converters = Collections
-      .unmodifiableMap(Stream.of(new SimpleEntry<>("INT", "toInt(%s)"), //
+      .unmodifiableMap(Stream.of( //
+          new SimpleEntry<>("INT", "toInt(%s)"), //
           new SimpleEntry<>("LONG", "toInt(%s)"), //
           new SimpleEntry<>("FLOAT", "toFloat(%s)"), //
           new SimpleEntry<>("DOUBLE", "toFloat(%s)"), // ??
