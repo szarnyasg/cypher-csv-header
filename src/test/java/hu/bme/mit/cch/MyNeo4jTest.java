@@ -1,6 +1,8 @@
 package hu.bme.mit.cch;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -13,23 +15,32 @@ import java.util.Arrays;
 
 public class MyNeo4jTest {
 
+    CsvLoaderConfig config;
+    CsvHeaderToCypherConverter c;
+    GraphDatabaseService gds;
+
     static String getResourceAbsolutePath(String testResource) {
         final URL resource = MyNeo4jTest.class.getClassLoader().getResource(testResource);
-        System.out.println(resource);
         return resource.getPath();
+    }
+
+    @Before
+    public void init() {
+        config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(false).build();
+        c = new CsvHeaderToCypherConverter();
+        gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
+    }
+
+    @After
+    public void shutdown() {
+        gds.shutdown();
     }
 
     @Test
     public void basicTest() {
         final String header = "name:STRING";
-
-        final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(false).build();
-        final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
-
         final String cypher = c.convertNodes(getResourceAbsolutePath("basic.csv"), header, Arrays.asList("Person"), config);
-        System.out.println(cypher);
 
-        final GraphDatabaseService gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
@@ -38,14 +49,8 @@ public class MyNeo4jTest {
     @Test
     public void idTest() {
         final String header = ":ID|name:STRING";
-
-        final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(false).build();
-        final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
-
         final String cypher = c.convertNodes(getResourceAbsolutePath("id.csv"), header, Arrays.asList("Person"), config);
-        System.out.println(cypher);
 
-        final GraphDatabaseService gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
@@ -60,14 +65,8 @@ public class MyNeo4jTest {
     public void idSpaceTest() {
         final String idSpace = "PERSONID";
         final String header = String.format(":ID(%s)|name:STRING", idSpace);
-
-        final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(false).build();
-        final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
-
         final String cypher = c.convertNodes(getResourceAbsolutePath("id_space.csv"), header, Arrays.asList("Person"), config);
-        System.out.println(cypher);
 
-        final GraphDatabaseService gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
@@ -82,14 +81,8 @@ public class MyNeo4jTest {
     @Ignore
     public void labelTest() {
         final String header = ":ID|:LABEL|name:STRING";
-
-        final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(false).build();
-        final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
-
         final String cypher = c.convertNodes(getResourceAbsolutePath("label.csv"), header, Arrays.asList("Person"), config);
-        System.out.println(cypher);
 
-        final GraphDatabaseService gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());
@@ -102,14 +95,8 @@ public class MyNeo4jTest {
     @Ignore
     public void arrayTest() {
         final String header = ":ID|name:STRING[]";
-
-        final CsvLoaderConfig config = CsvLoaderConfig.builder().fieldTerminator('|').arrayDelimiter(':').stringIds(false).skipHeaders(false).build();
-        final CsvHeaderToCypherConverter c = new CsvHeaderToCypherConverter();
-
         final String cypher = c.convertNodes(getResourceAbsolutePath("array.csv"), header, Arrays.asList("Person"), config);
-        System.out.println(cypher);
 
-        final GraphDatabaseService gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
         final Result execute = gds.execute(cypher);
         final QueryStatistics qs = execute.getQueryStatistics();
         Assert.assertEquals(1, qs.getNodesCreated());

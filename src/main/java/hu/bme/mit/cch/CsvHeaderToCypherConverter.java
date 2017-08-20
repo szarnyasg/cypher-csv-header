@@ -60,12 +60,7 @@ public class CsvHeaderToCypherConverter {
 //            .findFirst().get().getIdSpace();
 //    final String idProperty = Constants.ID_PROPERTY + (idSpace.isPresent() ? ("_" + idSpace.get()) : "");
 
-    System.out.println(fields);
-
     final String cypherProperties = cypherProperties(fields);
-
-    System.out.println(cypherProperties);
-
     final String cypherOptionalSpace = !cypherLabels.isEmpty() && !cypherProperties.isEmpty() ? " " : "";
 
     final String createNodeClause = String.format("CREATE (%s%s%s)\n",
