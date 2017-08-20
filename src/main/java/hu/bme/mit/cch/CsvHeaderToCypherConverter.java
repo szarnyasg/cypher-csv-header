@@ -1,15 +1,12 @@
 package hu.bme.mit.cch;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -55,14 +52,22 @@ public class CsvHeaderToCypherConverter {
    */
   public String convertNodes(final String filename, final String header, final Collection<String> labels,
       final CsvLoaderConfig config) {
-    final List<CsvField> fields = processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
+    final List<CsvField> fields = CsvHeader.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
 
     final String cypherLabels = labels.stream().map(l -> String.format(":`%s`", l)).collect(Collectors.joining());
+
+//    final Optional<String> idSpace = fields.stream().filter(f -> f.getType().equals(Constants.ID_FIELD))
+//            .findFirst().get().getIdSpace();
+//    final String idProperty = Constants.ID_PROPERTY + (idSpace.isPresent() ? ("_" + idSpace.get()) : "");
+
     final String cypherProperties = cypherProperties(fields);
     final String cypherOptionalSpace = !cypherLabels.isEmpty() && !cypherProperties.isEmpty() ? " " : "";
 
-    final String createNodeClause = String.format("CREATE (%s%s%s)\n", cypherLabels, cypherOptionalSpace,
-        cypherProperties);
+    final String createNodeClause = String.format("CREATE (%s%s%s)\n",
+          cypherLabels,
+          cypherOptionalSpace,
+          cypherProperties);
+
 
     return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.isSkipHeaders()).toString();
   }
@@ -77,7 +82,7 @@ public class CsvHeaderToCypherConverter {
    */
   public String convertRelationships(final String filename, final String header, final String label,
       final CsvLoaderConfig config) {
-    final List<CsvField> fields = processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
+    final List<CsvField> fields = CsvHeader.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
 
     final Optional<String> startIdSpace = fields.stream().filter(f -> f.getType().equals(Constants.START_ID_FIELD))
         .findFirst().get().getIdSpace();
@@ -122,7 +127,7 @@ public class CsvHeaderToCypherConverter {
   }
 
   /**
-   * Generateds the "LOAD CSV ..." clause.
+   * Generates the "LOAD CSV ..." clause.
    * 
    * @param filename
    * @param fieldTerminator
@@ -181,26 +186,6 @@ public class CsvHeaderToCypherConverter {
     } else {
       return "{" + cypherProperties + "}";
     }
-  }
-
-  /**
-   * Processes CSV header. Works for both nodes and relationships.
-   * 
-   * @param header
-   * @param fieldTerminator
-   * @param quotationCharacter
-   * @return
-   */
-  private List<CsvField> processHeader(final String header, final char fieldTerminator, final char quotationCharacter) {
-    final String separatorRegex = Pattern.quote(String.valueOf(fieldTerminator));
-    final List<String> attributes = Arrays.asList(header.split(separatorRegex));
-
-    final List<CsvField> fieldEntries = //
-        IntStream.range(0, attributes.size()) //
-            .mapToObj(i -> CsvField.from(i, attributes.get(i), quotationCharacter)) //
-            .flatMap(entry -> entry.isPresent() ? Stream.of(entry.get()) : Stream.empty()).collect(Collectors.toList());
-
-    return fieldEntries;
   }
 
 }
