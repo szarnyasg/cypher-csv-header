@@ -26,6 +26,12 @@ Note that unlike the _import tool_, this tool offers little fault-tolerance: fau
 * `:LABEL` and `:TYPE` are not yet supported, but they could be with APOC for [dynamic types](https://neo4j-contrib.github.io/neo4j-apoc-procedures/index32.html#_creating_data), such as `apoc.create.node` and `apoc.create.relationship`.
 * Add indexing on ids to enhance performance.
 
+## Notes
+
+The `CsvHeaderToCypherConverter` class is intended for use cases when APOC is not available, but the `LOAD CSV` Cypher command works.
+
+Note that this is a rare case, as `LOAD CSV` is considered [legacy in openCypher](https://github.com/opencypher/openCypher/blob/master/docs/standardisation-scope.adoc). However, we plan to support `LOAD CSV` in our [ingraph](http://docs.inf.mit.bme.hu/ingraph/) system.
+
 ## Related pages in the Neo4j doc
 
 * [Developer guide](https://neo4j.com/developer/guide-import-csv/)

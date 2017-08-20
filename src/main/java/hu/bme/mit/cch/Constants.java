@@ -1,5 +1,7 @@
 package hu.bme.mit.cch;
 
+import java.util.Optional;
+
 public class Constants {
 
   public static final String ID_FIELD = "ID";
@@ -12,5 +14,9 @@ public class Constants {
   public static final String END_ID_PROPERTY   = INTERNAL_PREFIX + END_ID_FIELD.toLowerCase();
 
   public static final String LINE_VAR = "line";
+
+  public static String getPostfix(Optional<String> idSpace) {
+    return ID_PROPERTY + (idSpace.isPresent() ? ("_" + idSpace.get()) : "");
+  }
 
 }

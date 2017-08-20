@@ -60,7 +60,12 @@ public class CsvHeaderToCypherConverter {
 //            .findFirst().get().getIdSpace();
 //    final String idProperty = Constants.ID_PROPERTY + (idSpace.isPresent() ? ("_" + idSpace.get()) : "");
 
+    System.out.println(fields);
+
     final String cypherProperties = cypherProperties(fields);
+
+    System.out.println(cypherProperties);
+
     final String cypherOptionalSpace = !cypherLabels.isEmpty() && !cypherProperties.isEmpty() ? " " : "";
 
     final String createNodeClause = String.format("CREATE (%s%s%s)\n",
@@ -89,17 +94,14 @@ public class CsvHeaderToCypherConverter {
     final Optional<String> endIdSpace = fields.stream().filter(f -> f.getType().equals(Constants.END_ID_FIELD))
         .findFirst().get().getIdSpace();
 
-    final String srcIdSpace = startIdSpace.isPresent() ? ("_" + startIdSpace.get()) : "";
-    final String trgIdSpace = endIdSpace.isPresent()   ? ("_" + endIdSpace.get()  ) : "";
-    
     final String createRelationshipsClause = String.format( //
         "MATCH\n" + //
         "  (src {`%s%s`: `%s`}),\n" + //
         "  (trg {`%s%s`: `%s`})\n" + //
         "CREATE\n" + //
         "  (src)-[:`%s` %s]->(trg)\n", //
-        Constants.ID_PROPERTY, srcIdSpace, Constants.START_ID_PROPERTY, //
-        Constants.ID_PROPERTY, trgIdSpace, Constants.END_ID_PROPERTY, //
+        Constants.ID_PROPERTY, Constants.getPostfix(startIdSpace), Constants.START_ID_PROPERTY, //
+        Constants.ID_PROPERTY, Constants.getPostfix(endIdSpace  ), Constants.END_ID_PROPERTY, //
         label, cypherProperties(fields));
 
     return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createRelationshipsClause, config.isSkipHeaders());
@@ -178,7 +180,6 @@ public class CsvHeaderToCypherConverter {
    */
   private String cypherProperties(List<CsvField> attributes) {
     final String cypherProperties = attributes.stream() //
-        .filter(a -> a.getName().startsWith(Constants.INTERNAL_PREFIX)) //
         .map(a -> String.format("`%s`: `%s`", a.getName(), a.getName())) //
         .collect(Collectors.joining(", "));
     if ("".equals(cypherProperties)) {
