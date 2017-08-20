@@ -64,7 +64,7 @@ public class CsvHeaderToCypherConverter {
     final String createNodeClause = String.format("CREATE (%s%s%s)\n", cypherLabels, cypherOptionalSpace,
         cypherProperties);
 
-    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause).toString();
+    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.isSkipHeaders()).toString();
   }
 
   /**
@@ -97,7 +97,7 @@ public class CsvHeaderToCypherConverter {
         Constants.ID_PROPERTY, trgIdSpace, Constants.END_ID_PROPERTY, //
         label, cypherProperties(fields));
 
-    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createRelationshipsClause);
+    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createRelationshipsClause, config.isSkipHeaders());
   }
 
   /**
@@ -110,9 +110,12 @@ public class CsvHeaderToCypherConverter {
    * @return
    */
   private String createLoadCsvQuery(final String filename, char fieldTerminator, List<CsvField> fields,
-      final String createGraphElementClause) {
+      final String createGraphElementClause, final boolean skipHeaders) {
     final StringBuilder queryBuilder = new StringBuilder();
     queryBuilder.append(loadCsvClause(filename, fieldTerminator));
+    if (skipHeaders) {
+      queryBuilder.append("WITH line\nSKIP 1\n");
+    }
     queryBuilder.append(withPropertiesClause(fields));
     queryBuilder.append(createGraphElementClause);
     return queryBuilder.toString();
