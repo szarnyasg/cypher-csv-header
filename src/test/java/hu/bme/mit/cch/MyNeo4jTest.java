@@ -22,9 +22,12 @@ public class MyNeo4jTest {
 
     @Before
     public void init() {
-        config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(0).build();
+        config = CsvLoaderConfig.builder().fieldTerminator('|').arrayDelimiter(':').stringIds(false).skipHeaders(0).build();
         converter = new CsvHeaderToCypherConverter();
-        gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
+        gds = new TestGraphDatabaseFactory()
+                .newImpermanentDatabaseBuilder()
+                .setConfig("apoc.import.file.enabled", "true")
+                .newGraphDatabase();
     }
 
     @After
@@ -34,7 +37,7 @@ public class MyNeo4jTest {
 
     static String getResourceAbsolutePath(String testResource) {
         final URL resource = MyNeo4jTest.class.getClassLoader().getResource(testResource);
-        return resource.getPath();
+        return resource.toString();
     }
 
     protected QueryStatistics test(String testResource, String header, String label) {

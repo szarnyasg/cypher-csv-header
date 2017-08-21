@@ -69,8 +69,7 @@ public class CsvHeaderToCypherConverter {
           cypherOptionalSpace,
           cypherProperties);
 
-
-    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.isSkipHeaders()).toString();
+    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.getSkipLines()).toString();
   }
 
   /**
@@ -100,7 +99,7 @@ public class CsvHeaderToCypherConverter {
         Constants.ID_PROPERTY, Constants.getPostfix(endIdSpace  ), Constants.END_ID_PROPERTY, //
         label, cypherProperties(fields));
 
-    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createRelationshipsClause, config.isSkipHeaders());
+    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createRelationshipsClause, config.getSkipLines());
   }
 
   /**
@@ -113,11 +112,11 @@ public class CsvHeaderToCypherConverter {
    * @return
    */
   private String createLoadCsvQuery(final String filename, char fieldTerminator, List<CsvField> fields,
-      final String createGraphElementClause, final boolean skipHeaders) {
+      final String createGraphElementClause, final int skipLines) {
     final StringBuilder queryBuilder = new StringBuilder();
     queryBuilder.append(loadCsvClause(filename, fieldTerminator));
-    if (skipHeaders) {
-      queryBuilder.append("WITH line\nSKIP 1\n");
+    if (skipLines != 0) {
+      queryBuilder.append(String.format("WITH line\nSKIP %d\n", skipLines));
     }
     queryBuilder.append(withPropertiesClause(fields));
     queryBuilder.append(createGraphElementClause);
@@ -132,7 +131,7 @@ public class CsvHeaderToCypherConverter {
    * @return
    */
   private String loadCsvClause(final String filename, final char fieldTerminator) {
-    return String.format("LOAD CSV FROM 'file://%s' AS %s FIELDTERMINATOR '%s'\n", filename, Constants.LINE_VAR,
+    return String.format("LOAD CSV FROM '%s' AS %s FIELDTERMINATOR '%s'\n", filename, Constants.LINE_VAR,
         fieldTerminator);
   }
 

@@ -1,8 +1,8 @@
 package hu.bme.mit.cch;
 
-import java.util.Arrays;
-
 import org.junit.Test;
+
+import java.util.Arrays;
 
 public class CsvHeaderToCypherConverterTest {
 
@@ -12,17 +12,17 @@ public class CsvHeaderToCypherConverterTest {
 
   @Test
   public void test1() {
-    System.out.println(h2c.convertNodes("/my.csv", ":ID(Forum)|id:LONG|title:STRING|creationDate:STRING", Arrays.asList("Forum"), config));
+    System.out.println(h2c.convertNodes("file:///my.csv", ":ID(Forum)|id:LONG|title:STRING|creationDate:STRING", Arrays.asList("Forum"), config));
   }
 
   @Test
   public void test2() {
-    System.out.println(h2c.convertNodes("/Sensor.csv", ":ID|languages:STRING[]|my-numbers:INT[]|bools:BOOLEAN[]", Arrays.asList("Sensor"), config));
+    System.out.println(h2c.convertNodes("file:///Sensor.csv", ":ID|languages:STRING[]|my-numbers:INT[]|bools:BOOLEAN[]", Arrays.asList("Sensor"), config));
   }
 
   @Test
   public void test3() {
-    System.out.println(h2c.convertRelationships("/connectsTo.csv", ":START_ID(Forum)|:END_ID(Person)|languages:STRING[]|my-numbers:INT[]|bools:BOOLEAN[]", "connectsTo", config));
+    System.out.println(h2c.convertRelationships("file:///connectsTo.csv", ":START_ID(Forum)|:END_ID(Person)|languages:STRING[]|my-numbers:INT[]|bools:BOOLEAN[]", "connectsTo", config));
   }
 
   
