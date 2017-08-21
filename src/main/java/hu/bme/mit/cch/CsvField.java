@@ -63,7 +63,7 @@ public class CsvField {
       final String type = idMatcher.group(1);
       final Optional<String> idSpace = Optional.ofNullable(idMatcher.group(3));
 
-      final String name = Constants.getPostfix(idSpace);
+      final String name = Constants.getIdProperty(idSpace);
 
       return Optional.of(new CsvField(index, name, type, false, idSpace));
     }

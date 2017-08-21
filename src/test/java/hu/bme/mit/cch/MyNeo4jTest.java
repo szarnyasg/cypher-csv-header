@@ -63,9 +63,9 @@ public class MyNeo4jTest {
         Assert.assertEquals(1, qs.getNodesCreated());
 
         final Result checkExecute = gds.execute(
-                String.format("MATCH (n) WHERE n.%s = 1 RETURN COUNT(*) AS converter", Constants.ID_PROPERTY)
+                String.format("MATCH (n) WHERE n.%s = 1 RETURN COUNT(*) AS c", Constants.ID_PROPERTY)
         );
-        Assert.assertEquals(1L, checkExecute.next().get("converter"));
+        Assert.assertEquals(1L, checkExecute.next().get("c"));
     }
 
     @Test
@@ -76,9 +76,9 @@ public class MyNeo4jTest {
         Assert.assertEquals(1, qs.getNodesCreated());
 
         final Result checkExecute = gds.execute(
-                String.format("MATCH (n) WHERE n.%s_%s = 1 RETURN count(*) AS converter", Constants.ID_PROPERTY, idSpace)
+                String.format("MATCH (n) WHERE n.%s_%s = 1 RETURN count(*) AS c", Constants.ID_PROPERTY, idSpace)
         );
-        Assert.assertEquals(1L, checkExecute.next().get("converter"));
+        Assert.assertEquals(1L, checkExecute.next().get("c"));
     }
 
     @Test
@@ -87,15 +87,17 @@ public class MyNeo4jTest {
         final QueryStatistics qs = test("label.csv", ":ID|:LABEL|name:STRING", "Person");
         Assert.assertEquals(1, qs.getNodesCreated());
 
-        final Result checkExecute = gds.execute("MATCH (n:Person) RETURN COUNT(*) AS c");
-        Assert.assertEquals(1, checkExecute.next().get("converter"));
+        final Result checkExecute = gds.execute("MATCH (n:Person) RETURN count(*) AS c");
+        Assert.assertEquals(1, checkExecute.next().get("c"));
     }
 
     @Test
-    @Ignore
     public void arrayTest() {
         final QueryStatistics qs = test("array.csv", ":ID|name:STRING[]", "Person");
         Assert.assertEquals(1, qs.getNodesCreated());
+
+        final Result checkExecute = gds.execute("MATCH (n:Person) UNWIND n.name AS name RETURN count(*) AS c");
+        Assert.assertEquals(3L, checkExecute.next().get("c"));
     }
 
 }

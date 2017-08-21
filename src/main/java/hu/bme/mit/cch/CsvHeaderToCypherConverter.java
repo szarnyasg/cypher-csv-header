@@ -69,7 +69,7 @@ public class CsvHeaderToCypherConverter {
           cypherOptionalSpace,
           cypherProperties);
 
-    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.getSkipLines()).toString();
+    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.getSkipLines(), config.getArrayDelimiter());
   }
 
   /**
@@ -91,15 +91,15 @@ public class CsvHeaderToCypherConverter {
 
     final String createRelationshipsClause = String.format( //
         "MATCH\n" + //
-        "  (src {`%s%s`: `%s`}),\n" + //
-        "  (trg {`%s%s`: `%s`})\n" + //
+        "  (src {`%s`: `%s`}),\n" + //
+        "  (trg {`%s`: `%s`})\n" + //
         "CREATE\n" + //
         "  (src)-[:`%s` %s]->(trg)\n", //
-        Constants.ID_PROPERTY, Constants.getPostfix(startIdSpace), Constants.START_ID_PROPERTY, //
-        Constants.ID_PROPERTY, Constants.getPostfix(endIdSpace  ), Constants.END_ID_PROPERTY, //
+        Constants.getIdProperty(startIdSpace), Constants.START_ID_PROPERTY, //
+        Constants.getIdProperty(endIdSpace  ), Constants.END_ID_PROPERTY, //
         label, cypherProperties(fields));
 
-    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createRelationshipsClause, config.getSkipLines());
+    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createRelationshipsClause, config.getSkipLines(), config.getArrayDelimiter());
   }
 
   /**
@@ -112,13 +112,13 @@ public class CsvHeaderToCypherConverter {
    * @return
    */
   private String createLoadCsvQuery(final String filename, char fieldTerminator, List<CsvField> fields,
-      final String createGraphElementClause, final int skipLines) {
+      final String createGraphElementClause, final int skipLines, final char arrayDelimiter) {
     final StringBuilder queryBuilder = new StringBuilder();
     queryBuilder.append(loadCsvClause(filename, fieldTerminator));
     if (skipLines != 0) {
       queryBuilder.append(String.format("WITH line\nSKIP %d\n", skipLines));
     }
-    queryBuilder.append(withPropertiesClause(fields));
+    queryBuilder.append(withPropertiesClause(fields, arrayDelimiter));
     queryBuilder.append(createGraphElementClause);
     return queryBuilder.toString();
   }
@@ -141,20 +141,21 @@ public class CsvHeaderToCypherConverter {
    * @param fields
    * @return
    */
-  private String withPropertiesClause(final List<CsvField> fields) {
-    final String withEntries = fields.stream().map(f -> {
-      final String converter = converters.getOrDefault(f.getType(), "%s");
+  private String withPropertiesClause(final List<CsvField> fields, final char arrayDelimiter) {
+    final String withEntries = fields.stream().map(field -> {
+      final String converter = converters.getOrDefault(field.getType(), "%s");
 
-      final String lineEntry = String.format("%s[%d]", Constants.LINE_VAR, f.getIndex());
+      final String lineEntry = String.format("%s[%d]", Constants.LINE_VAR, field.getIndex());
 
       final String variable;
-      if (f.isArray()) {
+      if (field.isArray()) {
+        final String splitter = String.format("split(%s, '%s')", lineEntry, arrayDelimiter);
         final String varConv = String.format(converter, "property");
-        variable = String.format("[property IN %s | %s]", lineEntry, varConv);
+        variable = String.format("[property IN %s | %s]", splitter, varConv);
       } else {
         variable = String.format(converter, lineEntry);
       }
-      final String withEntry = String.format("  %s AS `%s`", variable, f.getName());
+      final String withEntry = String.format("  %s AS `%s`", variable, field.getName());
 
       return withEntry;
     }).collect(Collectors.joining(",\n"));

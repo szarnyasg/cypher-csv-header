@@ -15,7 +15,7 @@ public class Constants {
 
   public static final String LINE_VAR = "line";
 
-  public static String getPostfix(Optional<String> idSpace) {
+  public static String getIdProperty(Optional<String> idSpace) {
     return ID_PROPERTY + (idSpace.isPresent() ? ("_" + idSpace.get()) : "");
   }
 
