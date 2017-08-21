@@ -57,10 +57,6 @@ public class CsvHeaderToCypherConverter {
 
     final String cypherLabels = labels.stream().map(l -> String.format(":`%s`", l)).collect(Collectors.joining());
 
-//    final Optional<String> idSpace = fields.stream().filter(f -> f.getType().equals(Constants.ID_FIELD))
-//            .findFirst().get().getIdSpace();
-//    final String idProperty = Constants.ID_PROPERTY + (idSpace.isPresent() ? ("_" + idSpace.get()) : "");
-
     final String cypherProperties = cypherProperties(fields);
     final String cypherOptionalSpace = !cypherLabels.isEmpty() && !cypherProperties.isEmpty() ? " " : "";
 
@@ -68,6 +64,10 @@ public class CsvHeaderToCypherConverter {
           cypherLabels,
           cypherOptionalSpace,
           cypherProperties);
+
+//    final String createNodeClause = String.format(
+//            "CALL apoc.create.node([labels], %s)", cypherProperties
+//    );
 
     return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.getSkipLines(), config.getArrayDelimiter());
   }
