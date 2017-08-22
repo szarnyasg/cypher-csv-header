@@ -1,6 +1,7 @@
 package hu.bme.mit.cch;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,12 +22,28 @@ public class CsvHeader {
         final String separatorRegex = Pattern.quote(String.valueOf(fieldTerminator));
         final List<String> attributes = Arrays.asList(header.split(separatorRegex));
 
-        final List<CsvField> fieldEntries = //
-                IntStream.range(0, attributes.size()) //
-                        .mapToObj(i -> CsvField.from(i, attributes.get(i), quotationCharacter)) //
-                        .flatMap(entry -> entry.isPresent() ? Stream.of(entry.get()) : Stream.empty()).collect(Collectors.toList());
+//        final List<CsvField> fieldEntries = //
+//                IntStream.range(0, attributes.size()) //
+//                        .mapToObj(i -> CsvField.from(i, attributes.get(i), quotationCharacter)) //
+//                        .flatMap(entry -> entry.isPresent() ? Stream.of(entry.get()) : Stream.empty()) //
+//                        .collect(Collectors.toList());
 
-        return fieldEntries;
+        return Collections.emptyList();
+    }
+
+    public static List<CsvField> processRelationshipHeader(final String header, final char fieldTerminator, final char quotationCharacter) {
+        final String separatorRegex = Pattern.quote(String.valueOf(fieldTerminator));
+        final List<String> attributes = Arrays.asList(header.split(separatorRegex));
+
+        return Collections.emptyList();
+    }
+
+    public static List<CsvField> processNodeHeader(final String header, final char fieldTerminator, final char quotationCharacter) {
+        final String separatorRegex = Pattern.quote(String.valueOf(fieldTerminator));
+        final List<String> attributes = Arrays.asList(header.split(separatorRegex));
+
+
+        return Collections.emptyList();
     }
 
 }

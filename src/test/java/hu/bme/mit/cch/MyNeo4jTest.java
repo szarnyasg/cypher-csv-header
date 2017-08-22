@@ -22,7 +22,7 @@ public class MyNeo4jTest {
 
     @Before
     public void init() {
-        config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(0).build();
+        config = CsvLoaderConfig.builder().fieldTerminator('|').stringIds(false).skipHeaders(false).build();
         converter = new CsvHeaderToCypherConverter();
         gds = new TestGraphDatabaseFactory().newImpermanentDatabase();
     }

@@ -53,24 +53,25 @@ public class CsvHeaderToCypherConverter {
    */
   public String convertNodes(final String filename, final String header, final Collection<String> labels,
       final CsvLoaderConfig config) {
-    final List<CsvField> fields = CsvHeader.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
+      final List<CsvField> fields = CsvHeader.processNodeHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
 
-    final String cypherLabels = labels.stream().map(l -> String.format(":`%s`", l)).collect(Collectors.joining());
+//    final String cypherLabels = labels.stream().map(l -> String.format(":`%s`", l)).collect(Collectors.joining());
 
 //    final Optional<String> idSpace = fields.stream().filter(f -> f.getType().equals(Constants.ID_FIELD))
 //            .findFirst().get().getIdSpace();
 //    final String idProperty = Constants.ID_PROPERTY + (idSpace.isPresent() ? ("_" + idSpace.get()) : "");
 
-    final String cypherProperties = cypherProperties(fields);
-    final String cypherOptionalSpace = !cypherLabels.isEmpty() && !cypherProperties.isEmpty() ? " " : "";
-
-    final String createNodeClause = String.format("CREATE (%s%s%s)\n",
-          cypherLabels,
-          cypherOptionalSpace,
-          cypherProperties);
-
-
-    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.isSkipHeaders()).toString();
+//    final String cypherProperties = cypherProperties(fields);
+//    final String cypherOptionalSpace = !cypherLabels.isEmpty() && !cypherProperties.isEmpty() ? " " : "";
+//
+//    final String createNodeClause = String.format("CREATE (%s%s%s)\n",
+//          cypherLabels,
+//          cypherOptionalSpace,
+//          cypherProperties);
+//
+//
+//    return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.isSkipHeaders()).toString();
+    return "";
   }
 
   /**
@@ -83,7 +84,7 @@ public class CsvHeaderToCypherConverter {
    */
   public String convertRelationships(final String filename, final String header, final String label,
       final CsvLoaderConfig config) {
-    final List<CsvField> fields = CsvHeader.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
+    final List<CsvField> fields = CsvHeader.processRelationshipHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
 
     final Optional<String> startIdSpace = fields.stream().filter(f -> f.getType().equals(Constants.START_ID_FIELD))
         .findFirst().get().getIdSpace();
