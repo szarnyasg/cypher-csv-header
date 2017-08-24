@@ -13,9 +13,9 @@ public class RegexTests {
 
 		Assert.assertTrue(matcher.find());
 		Assert.assertEquals(5,      matcher.groupCount());
-		Assert.assertEquals("test", matcher.group("name"));
-		Assert.assertEquals("TEST", matcher.group("fieldtype"));
-		Assert.assertEquals("Test", matcher.group("idspace"));
-		Assert.assertEquals("[]",   matcher.group("array"));
+		Assert.assertEquals(TestConstants.TEST_NAME, matcher.group("name"));
+		Assert.assertEquals(TestConstants.TEST_TYPE, matcher.group("fieldtype"));
+		Assert.assertEquals(TestConstants.TEST_IDPSACE, matcher.group("idspace"));
+		Assert.assertEquals(TestConstants.TEST_ARRAY,   matcher.group("array"));
 	}
 }

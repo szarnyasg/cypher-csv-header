@@ -11,34 +11,34 @@ public class CsvLoaderConfig {
   private final char arrayDelimiter;
   private final char quotationCharacter;
   private final boolean stringIds;
-  private final int skipLines;
+  private final boolean skipHeaders;
 
   private CsvLoaderConfig(Builder builder) {
     this.fieldTerminator = builder.fieldTerminator;
     this.arrayDelimiter = builder.arrayDelimiter;
     this.quotationCharacter = builder.quotationCharacter;
     this.stringIds = builder.stringIds;
-    this.skipLines = builder.skipLines;
+    this.skipHeaders = builder.skipHeaders;
   }
 
   public char getFieldTerminator() {
     return fieldTerminator;
   }
-  
+
   public char getArrayDelimiter() {
     return arrayDelimiter;
   }
-  
+
   public char getQuotationCharacter() {
     return quotationCharacter;
   }
-  
+
   public boolean isStringIds() {
     return stringIds;
   }
 
-  public int getSkipLines() { return skipLines; }
-  
+  public boolean isSkipHeaders() { return skipHeaders; }
+
   /**
    * Creates builder to build {@link CsvLoaderConfig}.
    * @return created builder
@@ -46,7 +46,7 @@ public class CsvLoaderConfig {
   public static Builder builder() {
     return new Builder();
   }
-  
+
   /**
    * Builder to build {@link CsvLoaderConfig}.
    */
@@ -55,7 +55,7 @@ public class CsvLoaderConfig {
     private char arrayDelimiter = ';';
     private char quotationCharacter = '"';
     private boolean stringIds = true;
-    private int skipLines = 0;
+    private boolean skipHeaders = true;
 
     private Builder() {
     }
@@ -75,8 +75,8 @@ public class CsvLoaderConfig {
       return this;
     }
 
-    public Builder skipHeaders(int skipLines) {
-      this.skipLines = skipLines;
+    public Builder skipHeaders(boolean skipHeaders) {
+      this.skipHeaders = skipHeaders;
       return this;
     }
 
@@ -84,5 +84,5 @@ public class CsvLoaderConfig {
       return new CsvLoaderConfig(this);
     }
   }
-  
+
 }
