@@ -9,7 +9,7 @@ public class RegexTest {
 
 	@Test
 	public void testNamedGroups() {
-		Matcher matcher = Constants.FIELD_PATTERN.matcher(TestConstants.TEST_ATTR);
+		Matcher matcher = Constants.FIELD_PATTERN.matcher(TestConstants.TEST_FIELD_1);
 
 		Assert.assertTrue(matcher.find());
 		Assert.assertEquals(5,      matcher.groupCount());
