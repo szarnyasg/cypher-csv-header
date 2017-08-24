@@ -102,7 +102,7 @@ public class MyNeo4jTest {
     public void labelTest() {
         loadNodes("label.csv", ":ID|:LABEL|name:STRING", "Person");
 
-        final Result checkExecute = gds.execute("MATCH (n) RETURN count(n) AS c");
+        final Result checkExecute = gds.execute("MATCH (n:Person:Employee:Student) RETURN count(n) AS c");
         Assert.assertEquals(1L, checkExecute.next().get("c"));
     }
 
