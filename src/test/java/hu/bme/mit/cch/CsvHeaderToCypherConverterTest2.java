@@ -2,8 +2,10 @@ package hu.bme.mit.cch;
 
 import java.util.Arrays;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class CsvHeaderToCypherConverterTest2 {
 
   final CsvHeaderToCypherConverter h2c = new CsvHeaderToCypherConverter();

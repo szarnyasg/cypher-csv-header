@@ -3,7 +3,7 @@ package hu.bme.mit.cch;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class CsvHeaderFieldTest {
+public class CsvHeaderFieldTests {
 
     @Test
     public void testCsvField1() {

@@ -60,7 +60,7 @@ public class MyNeo4jTest {
         Assert.assertEquals(1, qs.getNodesCreated());
 
         final Result checkExecute = gds.execute(
-                String.format("MATCH (n) WHERE n.%s = 1 RETURN COUNT(*) AS converter", Constants.ID_PROPERTY)
+                String.format("MATCH (n) WHERE n.%s = 1 RETURN COUNT(*) AS converter", Constants.ID_ATTR)
         );
         Assert.assertEquals(1L, checkExecute.next().get("converter"));
     }
@@ -73,7 +73,7 @@ public class MyNeo4jTest {
         Assert.assertEquals(1, qs.getNodesCreated());
 
         final Result checkExecute = gds.execute(
-                String.format("MATCH (n) WHERE n.%s_%s = 1 RETURN count(*) AS converter", Constants.ID_PROPERTY, idSpace)
+                String.format("MATCH (n) WHERE n.%s_%s = 1 RETURN count(*) AS converter", Constants.ID_ATTR, idSpace)
         );
         Assert.assertEquals(1L, checkExecute.next().get("converter"));
     }

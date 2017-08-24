@@ -1,5 +1,7 @@
 package hu.bme.mit.cch;
 
+import io.netty.util.Constant;
+
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
@@ -49,7 +51,21 @@ public class CsvHeaderToCypherConverter {
                                final CsvLoaderConfig config) {
         final List<CsvHeaderField> fields = CsvHeaderFields.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
 
-        final String cypherLabels = cypherLabels(labels, fields);
+        // The labels can be anything implementing the Collection interface which might not be mutable
+        // Because this needs to be mutable, the labels are being copied to an ArrayList
+        final List<String> mutableLabels = new ArrayList<>(labels);
+
+        final Optional<String> idSpace = fields.stream()
+                .filter(field -> Constants.ID_FIELD.equals(field.getType()))
+                .filter(field -> field.getIdSpace() != null)
+                .map(field -> Constants.IDSPACE_LABEL_PREFIX + field.getIdSpace())
+                .findFirst();
+        idSpace.ifPresent(mutableLabels::add);
+
+        final String cypherLabels = mutableLabels.stream()
+                .map(label -> String.format(":`%s`", label))
+                .collect(Collectors.joining());
+
         final String cypherProperties = cypherProperties(fields);
         final String cypherOptionalSpace = !cypherLabels.isEmpty() && !cypherProperties.isEmpty() ? " " : "";
 
@@ -72,27 +88,34 @@ public class CsvHeaderToCypherConverter {
                                        final CsvLoaderConfig config) {
         final List<CsvHeaderField> fields = CsvHeaderFields.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
 
-        final String startIdSpace = fields.stream()
+        final String startIdSpaceLabel = fields.stream()
                 .filter(f -> Constants.START_ID_FIELD.equals(f.getType()))
                 .findFirst()
                 .map(CsvHeaderField::getIdSpace)
-                .orElse(Constants.END_ID_PROPERTY);
+                .map(idspace -> ":" + Constants.IDSPACE_LABEL_PREFIX + idspace)
+                .orElse("");
 
-        final String endIdSpace = fields.stream()
+        final String endIdSpaceLabel = fields.stream()
                 .filter(f -> Constants.END_ID_FIELD.equals(f.getType()))
                 .findFirst()
                 .map(CsvHeaderField::getIdSpace)
-                .orElse(Constants.START_ID_PROPERTY);
+                .map(idspace -> ":" + Constants.IDSPACE_LABEL_PREFIX + idspace)
+                .orElse("");
+
+        final Collection<CsvHeaderField> edgeProperties = fields.stream()
+                .filter(field -> !Constants.START_ID_FIELD.equals(field.getType()))
+                .filter(field -> !Constants.END_ID_FIELD.equals(field.getType()))
+                .collect(Collectors.toList());
 
         final String createRelationshipsClause = String.format( //
                 "MATCH\n" + //
-                        "  (src {`%s_%s`: `%s`}),\n" + //
-                        "  (trg {`%s_%s`: `%s`})\n" + //
+                        "  (src%s {`%s`: `%s`}),\n" + //
+                        "  (trg%s {`%s`: `%s`})\n" + //
                         "CREATE\n" + //
                         "  (src)-[:`%s` %s]->(trg)\n", //
-                Constants.ID_PROPERTY, startIdSpace, Constants.START_ID_PROPERTY, //
-                Constants.ID_PROPERTY, endIdSpace, Constants.END_ID_PROPERTY, //
-                label, cypherProperties(fields));
+                startIdSpaceLabel, Constants.ID_ATTR, Constants.START_ID_ATTR, //
+                endIdSpaceLabel, Constants.ID_ATTR, Constants.END_ID_ATTR,
+                label, cypherProperties(edgeProperties));
 
         return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createRelationshipsClause, config.isSkipHeaders());
     }
@@ -129,19 +152,31 @@ public class CsvHeaderToCypherConverter {
      * @return
      */
     private String withPropertiesClause(final List<CsvHeaderField> fields) {
-        final String withEntries = fields.stream().map(f -> {
-            final String converter = CONVERTERS.getOrDefault(f.getType(), "%s");
-            final String lineEntry = String.format("%s[%d]", Constants.LINE_VAR, f.getIndex());
+        final String withEntries = fields.stream().map(field -> {
+            final String converter = CONVERTERS.getOrDefault(field.getType(), "%s");
+            final String lineEntry = String.format("%s[%d]", Constants.LINE_VAR, field.getIndex());
 
             final String variable;
-            if (f.isArray()) {
+            if (field.isArray()) {
                 final String varConv = String.format(converter, "property");
                 variable = String.format("[property IN %s | %s]", lineEntry, varConv);
             } else {
                 variable = String.format(converter, lineEntry);
             }
 
-            final String identifier = Constants.ID_FIELD.equals(f.getType()) ? Constants.IDSPACE_ATTR_PREFIX : f.getName();
+            String identifier = field.getName();
+            switch (field.getType()) {
+                case Constants.ID_FIELD:
+                    identifier = Constants.IDSPACE_ATTR_PREFIX;
+                    break;
+                case Constants.START_ID_FIELD:
+                    identifier = Constants.START_ID_ATTR;
+                    break;
+                case Constants.END_ID_FIELD:
+                    identifier = Constants.END_ID_ATTR;
+                    break;
+            }
+
             return String.format(
                     "  %s AS `%s`",
                     variable,
@@ -149,23 +184,6 @@ public class CsvHeaderToCypherConverter {
         }).collect(Collectors.joining(",\n"));
 
         return "WITH\n" + withEntries + "\n";
-    }
-
-    private String cypherLabels(Collection<String> labels, List<CsvHeaderField> fields) {
-        // The labels can be anything implementing the Collection interface which might not be mutable
-        // Because this needs to be mutable, the labels are being copied to an ArrayList
-        final List<String> mutableLabels = new ArrayList<>(labels);
-
-        final Optional<String> idSpace = fields.stream()
-                .filter(field -> Constants.ID_FIELD.equals(field.getType()))
-                .filter(field -> field.getIdSpace() != null)
-                .map(field -> Constants.IDSPACE_LABEL_PREFIX + field.getIdSpace())
-                .findFirst();
-        idSpace.ifPresent(mutableLabels::add);
-
-        return mutableLabels.stream()
-                .map(label -> String.format(":`%s`", label))
-                .collect(Collectors.joining());
     }
 
     /**
@@ -179,9 +197,20 @@ public class CsvHeaderToCypherConverter {
      * @param attributes
      * @return
      */
-    private String cypherProperties(List<CsvHeaderField> fields) {
+    private String cypherProperties(Collection<CsvHeaderField> fields) {
         final String cypherProperties = fields.stream()
-                .map(field -> Constants.ID_FIELD.equals(field.getType()) ? Constants.IDSPACE_ATTR_PREFIX : field.getName())
+                .map(field -> {
+                    switch (field.getType()) {
+                        case Constants.ID_FIELD:
+                            return Constants.ID_FIELD;
+                        case Constants.START_ID_FIELD:
+                            return Constants.START_ID_FIELD;
+                        case Constants.END_ID_FIELD:
+                            return Constants.END_ID_FIELD;
+                        default:
+                            return field.getName();
+                    }
+                })
                 .map(name -> String.format("`%s`: `%s`", name, name))
                 .collect(Collectors.joining(", "));
         if ("".equals(cypherProperties)) {
@@ -190,5 +219,7 @@ public class CsvHeaderToCypherConverter {
             return "{" + cypherProperties + "}";
         }
     }
+
+
 
 }

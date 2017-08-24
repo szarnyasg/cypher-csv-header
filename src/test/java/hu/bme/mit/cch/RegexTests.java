@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.util.regex.Matcher;
 
-public class RegexTest {
+public class RegexTests {
 
 	@Test
 	public void testNamedGroups() {
