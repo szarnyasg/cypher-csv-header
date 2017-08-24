@@ -40,9 +40,17 @@ public class CsvHeaderField {
         return idSpace;
     }
 
+    public boolean isMeta() {
+        // TODO check TYPE/LABEL
+        return Constants.LABEL_FIELD.equals(type) || Constants.TYPE_FIELD.equals(type);
+    }
+
     @Override
     public String toString() {
-        return String.format("AttributeEntry [index=%d, name=%s, type=%s, array=%s, idSpace=%s]", index, name, type, array, Optional.ofNullable(idSpace).orElse(""));
+        return String.format( //
+                "AttributeEntry [index=%d, name=%s, type=%s, array=%s, idSpace=%s]", //
+                index, name, type, array, Optional.ofNullable(idSpace).orElse("") //
+        );
     }
 
     public static CsvHeaderField parse(final int index, final String attribute, final char quotationCharacter) {
@@ -54,7 +62,11 @@ public class CsvHeaderField {
         final String name = extractGroup(matcher, "name");
         final String type = extractGroup(matcher, "fieldtype");
         final String idSpace = extractGroup(matcher, "idspace");
-        boolean array = Constants.ARRAY_PATTERN.equals(extractGroup(matcher, "array"));
+
+        final boolean isLabels = "LABEL".equals(type);
+
+        // as a notable exception, the ':LABEL' header always denotes an array
+        boolean array = Constants.ARRAY_PATTERN.equals(extractGroup(matcher, "array")) || isLabels;
 
         return new CsvHeaderField(index, name, type, array, idSpace);
     }
