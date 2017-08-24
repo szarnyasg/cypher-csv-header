@@ -35,7 +35,7 @@ public class CsvHeaderToCypherConverter {
                     new SimpleEntry<>("LONG", "toInt(%s)"), //
                     new SimpleEntry<>("FLOAT", "toFloat(%s)"), //
                     new SimpleEntry<>("DOUBLE", "toFloat(%s)"), // ??
-                    new SimpleEntry<>("BOOLEAN", "CASE toUpper(%s) WHEN 'TRUE' THEN true WHEN 'FALSE' THEN false END"),
+                    new SimpleEntry<>("BOOLEAN", "CASE toLower(%s) WHEN 'true' THEN true WHEN 'false' THEN false END"),
                     new SimpleEntry<>("BYTE", "toInt(%s)"), //
                     new SimpleEntry<>("SHORT", "toInt(%s)"), //
                     new SimpleEntry<>("CHAR", "%s"), //
