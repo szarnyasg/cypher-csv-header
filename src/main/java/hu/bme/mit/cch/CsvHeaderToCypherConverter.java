@@ -1,9 +1,12 @@
 package hu.bme.mit.cch;
 
-import io.netty.util.Constant;
-
-import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,11 +70,9 @@ public class CsvHeaderToCypherConverter {
                 .collect(Collectors.joining());
 
         final String cypherProperties = cypherProperties(fields);
-        final String cypherOptionalSpace = !cypherLabels.isEmpty() && !cypherProperties.isEmpty() ? " " : "";
 
-        final String createNodeClause = String.format("CREATE (%s%s%s)\n",
+        final String createNodeClause = String.format("CREATE (%s%s)\n",
                 cypherLabels,
-                cypherOptionalSpace,
                 cypherProperties);
 
         return createLoadCsvQuery(filename, config.getFieldTerminator(), fields, createNodeClause, config.isSkipHeaders());
@@ -194,7 +195,7 @@ public class CsvHeaderToCypherConverter {
      * {name: name, age: age}
      * </pre>
      *
-     * @param attributes
+     * @param fields
      * @return
      */
     private String cypherProperties(Collection<CsvHeaderField> fields) {
@@ -216,7 +217,7 @@ public class CsvHeaderToCypherConverter {
         if ("".equals(cypherProperties)) {
             return "";
         } else {
-            return "{" + cypherProperties + "}";
+            return " {" + cypherProperties + "}";
         }
     }
 
