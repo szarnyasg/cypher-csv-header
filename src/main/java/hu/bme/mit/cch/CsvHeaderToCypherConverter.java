@@ -1,8 +1,8 @@
 package hu.bme.mit.cch;
 
+import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -56,13 +56,13 @@ public class CsvHeaderToCypherConverter {
      * @return
      */
     public List<String> convertNodes(final String filename, final String header, final Collection<String> labels,
-                               final CsvLoaderConfig config) {
+                               final CsvLoaderConfig config) throws IOException {
         final List<CsvHeaderField> fields = CsvHeaderFields.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
 
         final String createIndexes = String.format(
-                "CREATE INDEX ON :%s(%s)",
-                labels.iterator().next(),
-                Constants.ID_ATTR
+                    "CREATE INDEX ON :%s(%s)",
+                    labels.iterator().next(),
+                    Constants.ID_ATTR
                 );
 
         // The labels can be anything implementing the Collection interface which might not be mutable
@@ -100,10 +100,10 @@ public class CsvHeaderToCypherConverter {
                     cypherProperties);
         }
 
-        return Arrays.asList(
-            createIndexes,
-            createLoadCsvQuery(filename, fields, createNodeClause, config)
-        );
+        List<String> queries = new ArrayList<>();
+        queries.add(createIndexes);
+        queries.addAll(createLoadCsvQuery(filename, fields, createNodeClause, config));
+        return queries;
     }
 
     /**
@@ -113,8 +113,8 @@ public class CsvHeaderToCypherConverter {
      * @param config
      * @return
      */
-    public String convertRelationships(final String filename, final String header, final String type,
-                                       final CsvLoaderConfig config) {
+    public List<String> convertRelationships(final String filename, final String header, final String type,
+                                       final CsvLoaderConfig config) throws IOException {
         final List<CsvHeaderField> fields = CsvHeaderFields.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
 
         final String startIdSpaceLabel = fields.stream()
@@ -170,20 +170,32 @@ public class CsvHeaderToCypherConverter {
      *
      * @return
      */
-    private String createLoadCsvQuery(final String filename, List<CsvHeaderField> fields,
-                                      final String createGraphElementClause, final CsvLoaderConfig config) {
-        final StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append(String.format(
-                "LOAD CSV FROM 'file://%s' AS %s FIELDTERMINATOR '%s'\n",
-                filename,
-                Constants.LINE_VAR,
-                config.getFieldTerminator()));
-        if (config.isSkipHeaders()) {
-            queryBuilder.append("WITH line\nSKIP 1\n");
+    private List<String> createLoadCsvQuery(final String filename, List<CsvHeaderField> fields,
+                                      final String createGraphElementClause, final CsvLoaderConfig config) throws IOException {
+        final List<String> queries = new ArrayList<String>();
+
+        final int numberOfLines = FileUtil.countLines(filename) + (config.isSkipHeaders() ? -1 : 0);
+        final int transactionSize = config.getTransactionSize();
+
+        for (int i = 0; i < numberOfLines; i += transactionSize) {
+            final StringBuilder queryBuilder = new StringBuilder();
+            queryBuilder.append(String.format(
+                    "LOAD CSV FROM 'file://%s' AS %s FIELDTERMINATOR '%s'\n",
+                    filename,
+                    Constants.LINE_VAR,
+                    config.getFieldTerminator()));
+            if (config.isSkipHeaders()) {
+                queryBuilder.append("WITH line\nSKIP 1\n");
+            }
+            queryBuilder.append(String.format("WITH line\nSKIP %d LIMIT %d\n", i, transactionSize));
+            queryBuilder.append(withPropertiesClause(fields, config.getArrayDelimiter()));
+            queryBuilder.append(createGraphElementClause);
+
+            System.out.println(queryBuilder.    toString()  );
+            queries.add(queryBuilder.toString());
         }
-        queryBuilder.append(withPropertiesClause(fields, config.getArrayDelimiter()));
-        queryBuilder.append(createGraphElementClause);
-        return queryBuilder.toString();
+
+        return queries;
     }
 
     /**

@@ -13,7 +13,7 @@ public class CsvHeaderFieldTests {
 
         Assert.assertEquals(TestConstants.TEST_NAME,    field.getName());
         Assert.assertEquals(TestConstants.TEST_TYPE,    field.getType());
-        Assert.assertEquals(TestConstants.TEST_IDPSACE, field.getIdSpace());
+        Assert.assertEquals(TestConstants.TEST_IDSPACE, field.getIdSpace());
         Assert.assertTrue(field.isArray());
     }
 
@@ -25,7 +25,7 @@ public class CsvHeaderFieldTests {
 
         Assert.assertEquals(TestConstants.TEST_NAME,    field.getName());
         Assert.assertEquals(TestConstants.TEST_TYPE,    field.getType());
-        Assert.assertEquals(TestConstants.TEST_IDPSACE, field.getIdSpace());
+        Assert.assertEquals(TestConstants.TEST_IDSPACE, field.getIdSpace());
         Assert.assertFalse(field.isArray());
     }
 

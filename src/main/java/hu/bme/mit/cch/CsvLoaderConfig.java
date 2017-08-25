@@ -12,6 +12,7 @@ public class CsvLoaderConfig {
   private final char quotationCharacter;
   private final boolean stringIds;
   private final boolean skipHeaders;
+  private final int transactionSize;
 
   private CsvLoaderConfig(Builder builder) {
     this.fieldTerminator = builder.fieldTerminator;
@@ -19,6 +20,7 @@ public class CsvLoaderConfig {
     this.quotationCharacter = builder.quotationCharacter;
     this.stringIds = builder.stringIds;
     this.skipHeaders = builder.skipHeaders;
+    this.transactionSize = builder.transactionSize;
   }
 
   public char getFieldTerminator() {
@@ -39,6 +41,8 @@ public class CsvLoaderConfig {
 
   public boolean isSkipHeaders() { return skipHeaders; }
 
+  public int getTransactionSize() { return transactionSize; }
+
   /**
    * Creates builder to build {@link CsvLoaderConfig}.
    * @return created builder
@@ -56,6 +60,7 @@ public class CsvLoaderConfig {
     private char quotationCharacter = '"';
     private boolean stringIds = true;
     private boolean skipHeaders = true;
+    private int transactionSize = 10000;
 
     private Builder() {
     }
@@ -77,6 +82,11 @@ public class CsvLoaderConfig {
 
     public Builder skipHeaders(boolean skipHeaders) {
       this.skipHeaders = skipHeaders;
+      return this;
+    }
+
+    public Builder transactionSize(int transactionSize) {
+      this.transactionSize = transactionSize;
       return this;
     }
 

@@ -13,11 +13,12 @@ import org.neo4j.graphdb.Result;
 import org.neo4j.kernel.api.exceptions.KernelException;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-public class MyNeo4jTest {
+public class ImportTest {
 
     CsvLoaderConfig config;
     CsvHeaderToCypherConverter converter;
@@ -38,11 +39,11 @@ public class MyNeo4jTest {
     }
 
     static String getResourceAbsolutePath(String testResource) {
-        final URL resource = MyNeo4jTest.class.getClassLoader().getResource(testResource);
+        final URL resource = ImportTest.class.getClassLoader().getResource(testResource);
         return resource.getPath();
     }
 
-    protected QueryStatistics loadNodes(String testResource, String header, String label) {
+    protected QueryStatistics loadNodes(String testResource, String header, String label) throws IOException {
         return loadNodes(testResource, header, Arrays.asList(label));
     }
 
@@ -54,7 +55,7 @@ public class MyNeo4jTest {
      * @param labels
      * @return
      */
-    protected QueryStatistics loadNodes(String testResource, String header, List<String> labels) {
+    protected QueryStatistics loadNodes(String testResource, String header, List<String> labels) throws IOException {
         final List<String> cypherQueries = converter.convertNodes(getResourceAbsolutePath(testResource), header, labels, config);
 
         QueryStatistics qs = null;
@@ -65,21 +66,25 @@ public class MyNeo4jTest {
         return qs;
     }
 
-    protected QueryStatistics loadRelationships(String testResource, String header, String type) {
-        final String cypher = converter.convertRelationships(getResourceAbsolutePath(testResource), header, type, config);
-        final Result result = gds.execute(cypher);
-        final QueryStatistics qs = result.getQueryStatistics();
+    protected QueryStatistics loadRelationships(String testResource, String header, String type) throws IOException {
+        final List<String> cypherQueries = converter.convertRelationships(getResourceAbsolutePath(testResource), header, type, config);
+
+        QueryStatistics qs = null;
+        for (String query : cypherQueries) {
+            final Result result = gds.execute(query);
+            qs = result.getQueryStatistics();
+        }
         return qs;
     }
 
     @Test
-    public void namesTest() {
+    public void namesTest() throws IOException {
         final QueryStatistics qs = loadNodes("names.csv", "name:STRING", "Person");
         Assert.assertEquals(2, qs.getNodesCreated());
     }
 
     @Test
-    public void idTest() {
+    public void idTest() throws IOException {
         final QueryStatistics qs = loadNodes("id.csv", ":ID|name:STRING", "Person");
         Assert.assertEquals(2, qs.getNodesCreated());
 
@@ -90,7 +95,7 @@ public class MyNeo4jTest {
     }
 
     @Test
-    public void idSpaceTest() {
+    public void idSpaceTest() throws IOException {
         final String idSpace = "PERSONID";
         final String header = String.format(":ID(%s)|name:STRING", idSpace);
         final QueryStatistics qs = loadNodes("id-space.csv", header, "Person");
@@ -103,7 +108,7 @@ public class MyNeo4jTest {
     }
 
     @Test
-    public void dynamicLabelTest() {
+    public void dynamicLabelTest() throws IOException {
         loadNodes("label.csv", ":ID|:LABEL|name:STRING", "Person");
 
         final Result checkExecute = gds.execute("MATCH (n:Person:Employee:Student) RETURN count(n) AS c");
@@ -111,7 +116,7 @@ public class MyNeo4jTest {
     }
 
     @Test
-    public void relationShipWithDynamicTypes() {
+    public void relationShipWithDynamicTypes() throws IOException {
         loadNodes("id.csv", ":ID|name:STRING", "Person");
         loadRelationships("type.csv", ":START_ID|:END_ID|:TYPE|since:INT", "DUMMY");
 
@@ -120,7 +125,7 @@ public class MyNeo4jTest {
     }
 
     @Test
-    public void relationshipOnIdsTest() {
+    public void relationshipOnIdsTest() throws IOException {
         loadNodes("id.csv", ":ID|name:STRING", "Person");
         loadRelationships("rel-on-ids.csv", ":START_ID|:END_ID|since:INT", "KNOWS");
 
@@ -129,7 +134,7 @@ public class MyNeo4jTest {
     }
 
     @Test
-    public void relationshipOnIdsWithIdSpacesTest() {
+    public void relationshipOnIdsWithIdSpacesTest() throws IOException {
         // use the same inputs as relationshipOnIdsTest(), but with id spaces
         loadNodes("id.csv", ":ID(Person)|name:STRING", "Person");
         loadRelationships("rel-on-ids.csv", ":START_ID(Person)|:END_ID(Person)|since:INT", "KNOWS");
@@ -140,7 +145,7 @@ public class MyNeo4jTest {
 
 
     @Test
-    public void arrayTest() {
+    public void arrayTest() throws IOException {
         final QueryStatistics qs = loadNodes("array.csv", ":ID|name:STRING[]", "Person");
         Assert.assertEquals(1, qs.getNodesCreated());
     }
