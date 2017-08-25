@@ -1,5 +1,6 @@
 package hu.bme.mit.cch;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -19,6 +20,8 @@ public class LdbcCsvs {
   File relFileList = new File(DIR + "relationships.txt");
 
   @Test
+  @Ignore
+  // TODO provide the exact filenames and the files (for determining transaction batches)
   public void load() throws IOException {
     try (BufferedReader br = new BufferedReader(new FileReader(nodeFileList))) {
       String line;
