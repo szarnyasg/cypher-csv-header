@@ -55,9 +55,13 @@ public class MyNeo4jTest {
      * @return
      */
     protected QueryStatistics loadNodes(String testResource, String header, List<String> labels) {
-        final String cypher = converter.convertNodes(getResourceAbsolutePath(testResource), header, labels, config);
-        final Result result = gds.execute(cypher);
-        final QueryStatistics qs = result.getQueryStatistics();
+        final List<String> cypherQueries = converter.convertNodes(getResourceAbsolutePath(testResource), header, labels, config);
+
+        QueryStatistics qs = null;
+        for (String query : cypherQueries) {
+            final Result result = gds.execute(query);
+            qs = result.getQueryStatistics();
+        }
         return qs;
     }
 
@@ -69,8 +73,8 @@ public class MyNeo4jTest {
     }
 
     @Test
-    public void basicTest() {
-        final QueryStatistics qs = loadNodes("basic.csv", "name:STRING", "Person");
+    public void namesTest() {
+        final QueryStatistics qs = loadNodes("names.csv", "name:STRING", "Person");
         Assert.assertEquals(2, qs.getNodesCreated());
     }
 
@@ -81,7 +85,7 @@ public class MyNeo4jTest {
 
         final Result checkExecute = gds.execute(
                 String.format("MATCH (n) WHERE n.%s = 1 RETURN count(n) AS c", Constants.ID_ATTR)
-        );
+            );
         Assert.assertEquals(1L, checkExecute.next().get("c"));
     }
 
@@ -89,17 +93,17 @@ public class MyNeo4jTest {
     public void idSpaceTest() {
         final String idSpace = "PERSONID";
         final String header = String.format(":ID(%s)|name:STRING", idSpace);
-        final QueryStatistics qs = loadNodes("id_space.csv", header, "Person");
+        final QueryStatistics qs = loadNodes("id-space.csv", header, "Person");
         Assert.assertEquals(1, qs.getNodesCreated());
 
         final Result checkExecute = gds.execute(
                 String.format("MATCH (n) WHERE n.%s = 1 RETURN count(n) AS c", Constants.ID_ATTR, idSpace)
-        );
+            );
         Assert.assertEquals(1L, checkExecute.next().get("c"));
     }
 
     @Test
-    public void labelTest() {
+    public void dynamicLabelTest() {
         loadNodes("label.csv", ":ID|:LABEL|name:STRING", "Person");
 
         final Result checkExecute = gds.execute("MATCH (n:Person:Employee:Student) RETURN count(n) AS c");
@@ -107,13 +111,33 @@ public class MyNeo4jTest {
     }
 
     @Test
-    public void typeTest() {
+    public void relationShipWithDynamicTypes() {
         loadNodes("id.csv", ":ID|name:STRING", "Person");
         loadRelationships("type.csv", ":START_ID|:END_ID|:TYPE|since:INT", "DUMMY");
 
         final Result checkExecute = gds.execute("MATCH ()-[r:KNOWS]->() RETURN count(r) AS c");
         Assert.assertEquals(1L, checkExecute.next().get("c"));
     }
+
+    @Test
+    public void relationshipOnIdsTest() {
+        loadNodes("id.csv", ":ID|name:STRING", "Person");
+        loadRelationships("rel-on-ids.csv", ":START_ID|:END_ID|since:INT", "KNOWS");
+
+        final Result checkExecute = gds.execute("MATCH ()-[r:KNOWS]->() RETURN count(r) AS c");
+        Assert.assertEquals(1L, checkExecute.next().get("c"));
+    }
+
+    @Test
+    public void relationshipOnIdsWithIdSpacesTest() {
+        // use the same inputs as relationshipOnIdsTest(), but with id spaces
+        loadNodes("id.csv", ":ID(Person)|name:STRING", "Person");
+        loadRelationships("rel-on-ids.csv", ":START_ID(Person)|:END_ID(Person)|since:INT", "KNOWS");
+
+        final Result checkExecute = gds.execute("MATCH ()-[r:KNOWS]->() RETURN count(r) AS c");
+        Assert.assertEquals(1L, checkExecute.next().get("c"));
+    }
+
 
     @Test
     public void arrayTest() {

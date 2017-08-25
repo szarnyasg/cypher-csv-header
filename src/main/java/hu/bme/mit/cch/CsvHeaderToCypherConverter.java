@@ -2,6 +2,7 @@ package hu.bme.mit.cch;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -54,9 +55,15 @@ public class CsvHeaderToCypherConverter {
      * @param config
      * @return
      */
-    public String convertNodes(final String filename, final String header, final Collection<String> labels,
+    public List<String> convertNodes(final String filename, final String header, final Collection<String> labels,
                                final CsvLoaderConfig config) {
         final List<CsvHeaderField> fields = CsvHeaderFields.processHeader(header, config.getFieldTerminator(), config.getQuotationCharacter());
+
+        final String createIndexes = String.format(
+                "CREATE INDEX ON :%s(%s)",
+                labels.iterator().next(),
+                Constants.ID_ATTR
+                );
 
         // The labels can be anything implementing the Collection interface which might not be mutable
         // Because this needs to be mutable, the labels are being copied to an ArrayList
@@ -93,7 +100,10 @@ public class CsvHeaderToCypherConverter {
                     cypherProperties);
         }
 
-        return createLoadCsvQuery(filename, fields, createNodeClause, config);
+        return Arrays.asList(
+            createIndexes,
+            createLoadCsvQuery(filename, fields, createNodeClause, config)
+        );
     }
 
     /**
@@ -141,7 +151,7 @@ public class CsvHeaderToCypherConverter {
         if (staticallyCreated) { // static relationship type
             createRelationshipsClause += String.format( //
                             "CREATE\n" + //
-                            "  (src)-[:`%s`%s]->(trg)\n", //
+                            "  (src)-[:`%s` {%s}]->(trg)\n", //
                     type, cypherProperties);
         } else { // dynamic relationship type
             createRelationshipsClause += String.format(

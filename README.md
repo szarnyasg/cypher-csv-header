@@ -20,12 +20,6 @@ We recommend to use this tool for experimenting and functional testing. The perf
 
 Note that unlike the _import tool_, this tool offers little fault-tolerance: faulty data will probably crash the `LOAD CSV` command.
 
-
-## Todo list
-
-* `:LABEL` and `:TYPE` are not yet supported, but they could be with APOC for [dynamic types](https://neo4j-contrib.github.io/neo4j-apoc-procedures/index32.html#_creating_data), such as `apoc.create.node` and `apoc.create.relationship`.
-* Add indexing on ids to enhance performance.
-
 ## Notes
 
 The `CsvHeaderToCypherConverter` class is intended for use cases when APOC is not available, but the `LOAD CSV` Cypher command works.
