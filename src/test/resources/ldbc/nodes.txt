@@ -1,8 +1,0 @@
-comment Message:Comment :ID(Comment)|id:LONG|creationDate:STRING|locationIP:STRING|browserUsed:STRING|content:STRING|length:INT
-forum Forum :ID(Forum)|id:LONG|title:STRING|creationDate:STRING
-organisation Organisation :ID(Organisation)|id:LONG|:LABEL|name:STRING|url:STRING
-person Person :ID(Person)|id:LONG|firstName:STRING|lastName:STRING|gender:STRING|birthday:STRING|creationDate:STRING|locationIP:STRING|browserUsed:STRING
-place Place :ID(Place)|id:LONG|name:STRING|url:STRING|:LABEL
-post Message:Post :ID(Post)|id:LONG|imageFile:STRING|creationDate:STRING|locationIP:STRING|browserUsed:STRING|language:STRING|content:STRING|length:INT
-tagclass TagClass :ID(TagClass)|id:LONG|name:STRING|url:STRING
-tag Tag :ID(Tag)|id:LONG|name:STRING|url:STRING
